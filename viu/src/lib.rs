@@ -202,6 +202,7 @@ fn construct_view_type(
         .collect::<Vec<_>>();
 
     quote::quote! {
+        #[allow(snake_case)]
         #vis struct #view_name <#ref_lifetime, #mut_lifetime, #(#gens,)*>
         #where_clause
         {
@@ -259,6 +260,7 @@ fn construct_view_type_ctor(
     fields: &HashMap<String, (syn::Visibility, Sharable, syn::Type)>,
 ) -> TokenStream {
     let view_name = syn::Ident::new(view_name, Span::call_site());
+    let ctor_name = syn::Ident::new(&format!("{view_name}_ctor"), Span::call_site());
     let fields = fields
         .iter()
         .map(|(field_name, (_, share, _))| {
@@ -276,7 +278,7 @@ fn construct_view_type_ctor(
 
     quote::quote! {
         #[macro_export]
-        macro_rules! #view_name {
+        macro_rules! #ctor_name {
             ($e: expr) => {
                 #view_name {
                     #(#fields,)*
